@@ -1,0 +1,71 @@
+{% extends "./_base.html" %}
+{% load staticfiles %}
+{% block title %}Graduation Work{% endblock %}
+
+{% block content %}
+{% include "./includes/navbar.html" %}
+
+<main role="main">
+
+  <div class="jumbotron">
+    <div class="container">
+      <h1 class="display-4">Добро пожаловать на сайт просто магазина</h1>
+      <p>Лучшие мобилы только у нас:</p>
+    </div>
+  </div>
+
+
+  <div class="container mb-5">
+    <!-- Example row of columns -->
+    <div class="row">
+      {% for phone in phones %}
+        <div class="col-md-4">
+          <h2>{{phone.name}}</h2>
+
+          <a href="{{ phone.get_absolute_url }}">
+
+            <img src="{% static phone.image.url %}" width="180">
+
+          </a>
+
+          <form action="#">
+            <input type="submit" class="btn btn-secondary add-to-cart" data-slug="{{phone.slug}}" value="Добавить в корзину »">
+          </form>
+        </div>
+      {% endfor%}
+    </div>
+  </div> <!-- /container -->
+
+  <div class="jumbotron">
+    <div class="container">
+      <h1 class="display-4">Не знаете что одеть летом?</h1>
+      <p>Вот что мы можем предложить:</p>
+    </div>
+  </div>
+
+
+  <div class="container mb-5">
+    <!-- Example row of columns -->
+    <div class="row">
+      {% for product in other %}
+        <div class="col-md-4">
+          <h2>{{ product.name }}</h2>
+
+          <a href="{{ product.get_absolute_url }}">
+
+            <img src="{% static product.image.url %}" width="180">
+
+          </a>
+
+          <form action="#">
+            <input type="submit" class="btn btn-secondary add-to-cart" data-slug="{{product.slug}}" value="Добавить в корзину »">
+          </form>
+        </div>
+      {% endfor%}
+    </div>
+  </div> <!-- /container -->
+
+</main>
+{% include "./includes/add_to_cart_script.html" %}
+{% include "./includes/footer.html" %}
+{% endblock %}
