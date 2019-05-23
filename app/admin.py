@@ -14,9 +14,17 @@ class ReviewAdmin(admin.ModelAdmin):
 class ArticleAdmin(admin.ModelAdmin):
     pass
 
+
+def make_order_payed(modelAdmin, request, queryset):
+    queryset.update(status='Оплачен')
+make_order_payed.short_description = 'Пометить как оплаченные'
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('__str__', 'user', 'status')
+    list_filter = ['create_date']
+    actions = [make_order_payed]
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

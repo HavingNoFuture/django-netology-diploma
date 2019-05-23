@@ -20,17 +20,16 @@
     <div class="row">
       {% for phone in phones %}
         <div class="col-md-4">
-          <h2>{{phone.name}}</h2>
+          <a href="{{ phone.get_absolute_url }}"><h2>{{ phone.title }}</h2></a>
 
           <a href="{{ phone.get_absolute_url }}">
-
             <img src="{% static phone.image.url %}" width="180">
-
           </a>
-
-          <form action="#">
-            <input type="submit" class="btn btn-secondary add-to-cart" data-slug="{{phone.slug}}" value="Добавить в корзину »">
-          </form>
+          {% if request.user.is_authenticated %}
+            <form action="#">
+              <input type="submit" class="btn btn-secondary add-to-cart" data-slug="{{phone.slug}}" value="Добавить в корзину »">
+            </form>
+          {% endif %}
         </div>
       {% endfor%}
     </div>
@@ -49,17 +48,15 @@
     <div class="row">
       {% for product in other %}
         <div class="col-md-4">
-          <h2>{{ product.name }}</h2>
-
+          <a href="{{ product.get_absolute_url }}"><h2>{{ product.title }}</h2></a>
           <a href="{{ product.get_absolute_url }}">
-
             <img src="{% static product.image.url %}" width="180">
-
           </a>
-
-          <form action="#">
-            <input type="submit" class="btn btn-secondary add-to-cart" data-slug="{{product.slug}}" value="Добавить в корзину »">
-          </form>
+          {% if request.user.is_authenticated %}
+            <form action="#">
+              <input type="submit" class="btn btn-secondary add-to-cart" data-slug="{{product.slug}}" value="Добавить в корзину »">
+            </form>
+          {% endif %}
         </div>
       {% endfor%}
     </div>

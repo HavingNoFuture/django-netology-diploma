@@ -3,38 +3,38 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect, JsonResponse
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import login, authenticate
 
 from app.models import Product, Category, Cart, CartItem, Order
-from app.forms import OrderForm
+from app.forms import OrderForm, RegistrationForm, LoginForm
+from django.contrib.auth.models import User
 
-def main(request):
+
+def main_view(request):
     context = {}
     context['phones'] = Product.objects.filter(category__title='phones')
     context['other'] = Product.objects.filter(category__title='other')
     context['categories'] = Category.objects.all()
     return render(request, 'app/index.html', context)
 
-def products_of_category(request, *args, **kwargs):
+
+# Product views
+
+def product_detail(request, *args, **kwargs):
+    context = {}
+    slug = kwargs['slug']
+    context['product'] = get_object_or_404(Product, slug=slug)
+    context['categories'] = Category.objects.all()
+    return render(request, 'app/product_detail.html', context)
+
+
+def products_of_category_view(request, *args, **kwargs):
     slug = kwargs['slug']
 
     context = {}
     context['products'] = Product.objects.filter(category__title__iexact=slug)
     context['categories'] = Category.objects.all()
     return render(request, 'app/products_of_category.html', context)
-
-
-class Categories(DetailView):
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data()
-        if self.kwargs:
-            id = self.kwargs['id']
-            context['products'] = Product.objects.get(pk=id)
-
-        return context
-
-    def get_queryset(self, *args, **kwargs):
-        category = self.kwargs['category']
-        return Category.objects.filter(title=category)
 
 
 # Cart views
@@ -96,7 +96,12 @@ def change_item_quantity_view(request):
                          'cart_total': cart_total})
 
 
-#
+def checkout_view(request):
+    context = {}
+    context['cart'] = cart_session(request)
+    context['categories'] = Category.objects.all()
+    return render(request, 'app/checkout.html', context)
+
 
 def order_create_view(request):
     context = {}
@@ -129,95 +134,64 @@ def congratulations_view(request):
     context['categories'] = Category.objects.all()
     return render(request, 'app/congratulations.html', context)
 
-def checkout_view(request):
-    context = {}
-    context['cart'] = cart_session(request)
-    context['categories'] = Category.objects.all()
-    return render(request, 'app/checkout.html', context)
 
 def empty_section(request):
     context = {}
     context['categories'] = Category.objects.all()
     return render(request, 'app/empty_section.html', context)
 
-def login(request):
+
+# Accounts views
+
+def account_view(request):
     context = {}
+    try:
+        context['orders'] = Order.objects.filter(user=request.user).order_by('-pk')
+    except:
+        context['orders'] = None
+    context['categories'] = Category.objects.all()
+    return render(request, 'app/account.html', context)
+
+
+def registration_view(request):
+    form = RegistrationForm(request.POST or None)
+    context = {}
+    context['form'] = form
+    if form.is_valid():
+        new_user = form.save(commit=False)
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        new_user.username = username
+        new_user.password = password
+        new_user.first_name = form.cleaned_data['first_name']
+        new_user.last_name = form.cleaned_data['last_name']
+        new_user.email = form.cleaned_data['email']
+        new_user.save()
+
+        login_user = authenticate(username=username, password=password)
+        if login_user:
+            login(request, login_user)
+            return HttpResponseRedirect(reverse('main_page'))
+        return HttpResponseRedirect(reverse('main_page'))
+
+    context['categories'] = Category.objects.all()
+    return render(request, 'app/registration.html', context)
+
+
+def login_view(request):
+    form = LoginForm(request.POST or None)
+    context = {}
+    context['form'] = form
+
+    if form.is_valid():
+        email = form.cleaned_data['email']
+        password = form.cleaned_data['password']
+        username = User.objects.get(email=email).username
+
+        login_user = authenticate(username=username, password=password)
+        if login_user:
+            login(request, login_user)
+            return HttpResponseRedirect(reverse('main_page'))
+
     context['categories'] = Category.objects.all()
     return render(request, 'app/login.html', context)
-
-def product_detail(request, *args, **kwargs):
-    context = {}
-    slug = kwargs['slug']
-    context['product'] = get_object_or_404(Product, slug=slug)
-    return render(request, 'app/product_detail.html', context)
-
-class ProductView(DetailView):
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data()
-        if self.kwargs:
-            product_id = int(kwargs['id'])
-            context['phone'] = get_object_or_404(Product, id=product_id)
-            # return render(self.request, 'app/phone.html', {'phone': phone})
-
-            # if product_id in self.request.session.get('reviewed_products', []):
-            #     context['is_review_exist'] = True
-        return context
-
-    def get_queryset(self):
-        return Product.objects.all()
-
-    # def post(self, request, *args, **kwargs):
-    #     product_id = int(self.kwargs['pk'])
-    #     form = ReviewForm(self.request.POST)
-    #
-    #     if form.is_valid():
-    #         review = form.save(commit=False)
-    #         review.product_id = product_id
-    #         review.save()
-    #         self.request.session['reviewed_products'] = self.request.session.get('reviewed_products', []) + [product_id]
-    #
-    #     return redirect(reverse('product_detail', kwargs={'pk': product_id}))
-
-def phone(request, **kwargs):
-    product_id = int(kwargs['id'])
-    phone = get_object_or_404(Product, id=product_id)
-    return render(request, 'app/phone.html', {'phone': phone})
-
-def smartphones(request):
-    context = {}
-    context['smartphones'] = Product.objects.filter(category__title='phone')
-    return render(request, 'app/smartphones.html', context)
-
-class ProductsList(ListView):
-    model = Product
-    context_object_name = 'product_list'
-
-# Create your views here.
-class ProductView(DetailView):
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data()
-        if self.kwargs:
-            product_id = int(self.kwargs['id'])
-            context['object'] = Product.objects.get(id=product_id)
-            context['price'] = Product.objects.get(product_id=product_id)
-            # context['form'] = ReviewForm
-
-            # if product_id in self.request.session.get('reviewed_products', []):
-            #     context['is_review_exist'] = True
-
-        return context
-
-    def get_queryset(self):
-        return Product.objects.all()
-
-    # def post(self, request, *args, **kwargs):
-    #     product_id = int(self.kwargs['pk'])
-    #     form = ReviewForm(self.request.POST)
-
-    #     if form.is_valid():
-    #         review = form.save(commit=False)
-    #         review.product_id = product_id
-    #         review.save()
-    #         self.request.session['reviewed_products'] = self.request.session.get('reviewed_products', []) + [product_id]
-
-    #     return redirect(reverse('product_detail', kwargs={'pk': product_id}))
