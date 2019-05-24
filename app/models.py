@@ -12,6 +12,7 @@ def pre_save_slug(sender, instance, *args, **kwargs):
     if not instance.slug:
         instance.slug = slugify(translit(instance.title, reversed=True))
 
+
 class Category(models.Model):
     title = models.CharField(max_length=50)
     slug = models.SlugField(blank=True)
@@ -50,12 +51,13 @@ pre_save.connect(pre_save_slug, sender=Product)
 
 
 class Review(models.Model):
-    user = models.TextField()
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    product = models.ManyToManyField(Product, related_name='reviews')
     text = models.TextField()
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField()
 
     def __str__(self):
-        return str(self.product.name) + ' ' + self.text[:50]
+        return f'Review №{self.pk}'
 
 
 class Article(models.Model):
@@ -125,7 +127,7 @@ ORDER_STATUS_CHOICES = (
 
 class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    items = models.ManyToManyField(Cart)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     total = models.DecimalField(max_digits=9, decimal_places=2, default=0)
     first_name = models.CharField(max_length=75)
     last_name = models.CharField(max_length=100)

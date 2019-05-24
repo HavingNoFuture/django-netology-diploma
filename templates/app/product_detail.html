@@ -31,21 +31,38 @@
       </div>
     </div>
     <hr>
-    {% for review in reviews %}
-      ★★★★★ <span>review.user</span>
-      <p>review.text</p>
+    <h4>Отзывы:</h4>
+    {% for review in product.reviews.all %}
+    <span>
+      {% for i in i|rjust:review.rating %}★{% endfor %}
+    </span>
+    <span>{{ review.user.first_name }}</span>
+    <p>{{ review.text }}</p>
     {% endfor%}
-    ★★★★★ <span>Вася</span>
-    <p> Хороший отзыв</p>
-
-    ★★ <span>Петя</span>
-    <p> Плохой отзыв</p>
-
     <hr>
-
     <div class="row">
       <div class="col-lg-6 col-md-8 col-sm-12">
         <h4>Оставте отзыв:</h4>
+
+        <form action="#" method="post">
+          {% csrf_token %}
+          <p>{{ form.text.label }}</p>
+          {{ form.text }}
+          <br>
+          <p>{{ form.rating.label }}</p>
+          {{ form.rating }}
+          <button type="submit" class="btn btn-primary">Оставить</button>
+        </form>
+      </div>
+    </div>
+
+  </div> <!-- /container -->
+
+</main>
+{% include "./includes/add_to_cart_script.html" %}
+{% endblock %}
+
+
 
         <form action="./merch/1/feedback" method="post">
           <input type="hidden" name="csrfmiddlewaretoken"
@@ -95,15 +112,3 @@
               5
             </label>
           </div>
-
-          <button type="submit" class="btn btn-primary">Оставить</button>
-        </form>
-      </div>
-    </div>
-
-  </div> <!-- /container -->
-
-
-</main>
-{% include "./includes/add_to_cart_script.html" %}
-{% endblock %}

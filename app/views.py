@@ -5,8 +5,8 @@ from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import login, authenticate
 
-from app.models import Product, Category, Cart, CartItem, Order
-from app.forms import OrderForm, RegistrationForm, LoginForm
+from app.models import Product, Category, Cart, CartItem, Order, Review
+from app.forms import OrderForm, RegistrationForm, LoginForm, ReviewForm
 from django.contrib.auth.models import User
 
 
@@ -23,8 +23,23 @@ def main_view(request):
 def product_detail(request, *args, **kwargs):
     context = {}
     slug = kwargs['slug']
-    context['product'] = get_object_or_404(Product, slug=slug)
+    product = get_object_or_404(Product, slug=slug)
+    print(product)
+    context['product'] = product
     context['categories'] = Category.objects.all()
+
+    form = ReviewForm(request.POST or None)
+    context['form'] = form
+
+    if form.is_valid():
+        new_review = Review() # form.save(commit=False)
+        new_review.user = request.user
+        new_review.product.add(product)
+        new_review.rating = form.cleaned_data['rating']
+        new_review.text = form.cleaned_data['text']
+        new_review.save()
+
+    context['reviews'] = Product.objects.get(slug=slug)
     return render(request, 'app/product_detail.html', context)
 
 
@@ -113,8 +128,8 @@ def order_create_view(request):
     if form.is_valid():
         new_order = Order()
         new_order.user = request.user
+        new_order.cart = cart
         new_order.save()
-        new_order.items.add(cart)
         new_order.first_name = form.cleaned_data['first_name']
         new_order.last_name = form.cleaned_data['last_name']
         new_order.phone = form.cleaned_data['phone']

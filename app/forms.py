@@ -1,6 +1,6 @@
 from django import forms
 from django.utils import timezone
-from .models import Order
+from .models import Order, Review
 from django.contrib.auth.models import User
 
 
@@ -97,3 +97,20 @@ class LoginForm(forms.Form):
             raise forms.ValidationError('Неверный пароль!')
 
 
+RATING_CHOICES = [('1', '1'), ('2', '2'), ('3', '3'), ('4', '4'), ('5', '5')]
+
+
+class ReviewForm(forms.ModelForm):
+    rating = forms.ChoiceField(widget=forms.RadioSelect, choices=RATING_CHOICES)
+    rating.label = 'Оцените:'
+
+    class Meta(object):
+        model = Review
+        fields = (
+            'text',
+            'rating',
+        )
+
+        labels = {
+            'text': 'Комментарий:',
+        }

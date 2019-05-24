@@ -13,7 +13,7 @@ from app.views import (main_view,
                        congratulations_view,
                        account_view,
                        registration_view,
-                       login_view)
+                       login_view,)
 
 urlpatterns = [
     path('', main_view, name='main_page'),
