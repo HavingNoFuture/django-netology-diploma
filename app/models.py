@@ -4,13 +4,17 @@ from django.db.models.signals import pre_save
 from django.urls import reverse
 from django.conf import settings
 
-from transliterate import translit
 from decimal import Decimal
+
+from transliterate import translit
 
 
 def pre_save_slug(sender, instance, *args, **kwargs):
     if not instance.slug:
-        instance.slug = slugify(translit(instance.title, reversed=True))
+        try:
+            instance.slug = slugify(translit(instance.title, reversed=True))
+        except:
+            instance.slug = slugify(instance.title)
 
 
 class Category(models.Model):
@@ -18,7 +22,7 @@ class Category(models.Model):
     slug = models.SlugField(blank=True)
 
     def __str__(self):
-        return self.title
+        return self.slug
 
     def get_absolute_url(self):
         return reverse('category', kwargs={'slug': self.slug})
@@ -27,16 +31,11 @@ class Category(models.Model):
 pre_save.connect(pre_save_slug, sender=Category)
 
 
-def image_folder(instance, filename):
-    filename = f'{instance.slug}.{filename}'
-    return f'{instance.slug}/{filename}'
-
-
 class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=9, decimal_places=2)
-    image = models.ImageField(upload_to=image_folder)
+    image = models.ImageField()
     description = models.TextField()
     slug = models.SlugField(blank=True)
 
@@ -52,22 +51,27 @@ pre_save.connect(pre_save_slug, sender=Product)
 
 class Review(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    product = models.ManyToManyField(Product, related_name='reviews')
     text = models.TextField()
     rating = models.PositiveIntegerField()
+    product = models.ManyToManyField('Review', related_name='reviews')
 
     def __str__(self):
         return f'Review №{self.pk}'
 
 
 class Article(models.Model):
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     text = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
     product = models.ManyToManyField(Product, related_name='article')
     slug = models.SlugField(blank=True)
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('article', kwargs={'slug': self.slug})
 
 
 pre_save.connect(pre_save_slug, sender=Article)

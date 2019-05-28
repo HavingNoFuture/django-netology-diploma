@@ -5,7 +5,7 @@ from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import login, authenticate
 
-from app.models import Product, Category, Cart, CartItem, Order, Review
+from app.models import Product, Category, Cart, CartItem, Order, Review, Article
 from app.forms import OrderForm, RegistrationForm, LoginForm, ReviewForm
 from django.contrib.auth.models import User
 
@@ -13,18 +13,27 @@ from django.contrib.auth.models import User
 def main_view(request):
     context = {}
     context['phones'] = Product.objects.filter(category__title='phones')
+    context['articles'] = Article.objects.all().order_by('-date')[:5]
     context['other'] = Product.objects.filter(category__title='other')
     context['categories'] = Category.objects.all()
     return render(request, 'app/index.html', context)
 
 
+def article_view(request, *args, **kwargs):
+    context = {}
+    slug = kwargs['slug']
+    context['article'] = get_object_or_404(Article, slug=slug)
+    context['categories'] = Category.objects.all()
+    return render(request, 'app/article.html', context)
+
+
 # Product views
 
-def product_detail(request, *args, **kwargs):
+
+def product_detail_view(request, *args, **kwargs):
     context = {}
     slug = kwargs['slug']
     product = get_object_or_404(Product, slug=slug)
-    print(product)
     context['product'] = product
     context['categories'] = Category.objects.all()
 
