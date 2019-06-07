@@ -1,5 +1,4 @@
-from django.urls import path, reverse_lazy
-from django.contrib.auth.views import LogoutView
+from django.urls import path
 from app.views import (main_view,
                        cart_view,
                        empty_section,
@@ -11,9 +10,6 @@ from app.views import (main_view,
                        checkout_view,
                        order_create_view,
                        congratulations_view,
-                       account_view,
-                       registration_view,
-                       login_view,
                        article_view)
 
 urlpatterns = [
@@ -28,9 +24,5 @@ urlpatterns = [
     path('cart/checkout/', checkout_view, name='checkout'),
     path('cart/order/', order_create_view, name='order_create'),
     path('cart/congratulations/', congratulations_view, name='congratulations'),
-    path('account/', account_view, name='account'),
-    path('account/login/', login_view, name='login'),
-    path('account/registration/', registration_view, name='registration'),
-    path('account/logout/', LogoutView.as_view(next_page=reverse_lazy('main_page')), name='logout'),
     path('empty_section/', empty_section, name='empty_section'),
 ]

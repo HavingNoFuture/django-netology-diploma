@@ -4,8 +4,6 @@
 
 
 {% block content %}
-{% include "./includes/navbar.html" %}
-
 <div class="container mt-3">
   <form action="#" method="POST">
     {% csrf_token %}
@@ -61,20 +59,5 @@
     <button type="submit" class="btn btn-secondary col" >Оформить заказ</button>
   </form>
 </div>
-<script>
-  window.addEventListener('load', e => {
-    address_li = document.querySelector('#address');
-    console.log(address_li)
-    console.log(address_li.querySelector('select'))
-
-    document.querySelector('#buying_type').querySelector('select').addEventListener('input', e => {
-      if (e.target.value === 'Доставка') {
-        address_li.style.display = "";
-      } else {
-        address_li.style.setProperty("display", "none", "important");
-      }
-    })
-  });
-
-</script>
+{% include "./includes/hide_buying_type_script.html" %}
 {% endblock %}

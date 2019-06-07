@@ -28,8 +28,6 @@ def article_view(request, *args, **kwargs):
 
 
 # Product views
-
-
 def product_detail_view(request, *args, **kwargs):
     context = {}
     slug = kwargs['slug']
@@ -41,10 +39,13 @@ def product_detail_view(request, *args, **kwargs):
     context['form'] = form
 
     if form.is_valid():
-        new_review = Review() # form.save(commit=False)
+        new_review = Review()
         new_review.user = request.user
+        new_review.rating = int(form.cleaned_data['rating'])
+        new_review.save()
+
         new_review.product.add(product)
-        new_review.rating = form.cleaned_data['rating']
+        new_review.save()
         new_review.text = form.cleaned_data['text']
         new_review.save()
 
@@ -186,7 +187,7 @@ def registration_view(request):
         username = form.cleaned_data['username']
         password = form.cleaned_data['password']
         new_user.username = username
-        new_user.password = password
+        new_user.set_password(password)
         new_user.first_name = form.cleaned_data['first_name']
         new_user.last_name = form.cleaned_data['last_name']
         new_user.email = form.cleaned_data['email']

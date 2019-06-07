@@ -53,7 +53,7 @@ class Review(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     text = models.TextField()
     rating = models.PositiveIntegerField()
-    product = models.ManyToManyField('Review', related_name='reviews')
+    product = models.ManyToManyField('Product', related_name='reviews')
 
     def __str__(self):
         return f'Review №{self.pk}'
