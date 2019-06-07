@@ -36,16 +36,16 @@
 Для запуска проекта необходимо:
 
 Установить зависимости:
-* pip install -r requirements.txt
+> pip install -r requirements.txt
 
 Создать модели:
-* python manage.py makemigrations
+> python manage.py makemigrations
 
 Провести миграцию:
-* python manage.py migrate
+> python manage.py migrate
 
 Загрузить тестовые данные:
-* python manage.py loaddata db.json
+> python manage.py loaddata db.json
 
 Выполнить команду:
-* python manage.py runserver
+> python manage.py runserver
